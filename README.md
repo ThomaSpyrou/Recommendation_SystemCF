@@ -1,2 +1,2 @@
 # Recommendation_SystemCF
-Recommendation System (Collaborative Filtering)
+Recommendation System (Content Based). 
