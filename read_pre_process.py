@@ -37,6 +37,10 @@ def read_data():
 
 
 def stem(cell):
+    """
+    :param cell:
+    :return:
+    """
     stemming = PorterStemmer()
     word_list = cell
     stemmed_list = stemming.stem(word_list)
