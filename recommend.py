@@ -32,8 +32,17 @@ def recommend(merged_data, books):
     users = users.sort_values(by=['userId', 'bookRating'], ascending=[True, False])  # sort them in order to the top exist the biggest rate
     users_after_reduction = users.groupby('userId', group_keys=False).apply(lambda c: c.nlargest(3, 'bookRating')) # choose the first 3 book ratings for each user
 
-    recommend_list = []
-    # [ userId : { keywords: values, authors: values, year: values}]
+    recommend_list = users_after_reduction.groupby('userId').agg(lambda x: x.tolist()).reset_index()
+    # recommend_list columns: userId, ISBN(b), bookRating, bookTitle(b),
+    # bookAuthor(b), yearOfPublication(b), publisher(b), location, age
+
+
+def jac_similarity():
+    pass
+
+
+def dice_similarity():
+    pass
 
 
 if __name__ == '__main__':
