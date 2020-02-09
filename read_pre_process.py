@@ -8,7 +8,12 @@ To run you have install needed modules
 
 import pandas as pd
 import numpy as np
-from nltk.stem import PorterStemmer 
+from nltk.stem import PorterStemmer
+import tokenizer
+import re
+import nltk
+from sklearn.feature_extraction.text import CountVectorizer
+from nltk.tokenize import RegexpTokenizer
 
 
 def read_data():
@@ -18,13 +23,13 @@ def read_data():
     """
     try:
 
-        book_ratings = pd.read_csv('BX-CSV-Dump/BX-Book-Ratings.csv', delimiter=';', encoding='latin1')
+        book_ratings = pd.read_csv('BX-CSV-Dump/BX-Book-Ratings.csv', delimiter=';', escapechar='\\', encoding='latin1')
         book_ratings.columns = ['userId', 'ISBN', 'bookRating']
 
-        users = pd.read_csv('BX-CSV-Dump/BX-Users.csv', delimiter=';', encoding='latin1')
+        users = pd.read_csv('BX-CSV-Dump/BX-Users.csv', delimiter=';', escapechar='\\', encoding='latin1')
         users.columns = ['userId', 'location', 'age']
 
-        books = pd.read_csv('BX-CSV-Dump/BX-Books.csv', delimiter=";", error_bad_lines=False, encoding='latin1')
+        books = pd.read_csv('BX-CSV-Dump/BX-Books.csv', delimiter=";", escapechar='\\', error_bad_lines=False, encoding='latin1')
         books.columns = ['ISBN', 'bookTitle', 'bookAuthor', 'yearOfPublication', 'publisher', 'imageURLS', 'imageURLM',
                          'imageURLL']
 
@@ -36,16 +41,19 @@ def read_data():
         print("CSV files are not in proper format.")
 
 
-def stem(cell):
+def stem_and_token(cell):
     """
     :param cell:
     :return:
     """
     stemming = PorterStemmer()
-    word_list = cell
-    stemmed_list = stemming.stem(word_list)
+    cleanString = re.sub(r'[^A-Za-z]', ' ', cell)
+    tokenized_list_of_string = nltk.word_tokenize(cleanString)
+    word_list = []
+    for item in tokenized_list_of_string:
+        word_list.append(stemming.stem(item.lower()))
 
-    return stemmed_list
+    return word_list
 
 
 def pre_processing(book_ratings, users, books):
@@ -59,16 +67,14 @@ def pre_processing(book_ratings, users, books):
     count_userId = book_ratings.groupby("userId")["userId"].transform(len)
     count_ISBN = book_ratings.groupby("ISBN")["ISBN"].transform(len)
 
-    mask_for_book_ratings = (count_userId >= 10) & (count_ISBN >= 5)
+    mask_for_book_ratings = (count_userId >= 5) & (count_ISBN >= 10)
     final_book_ratings = book_ratings[mask_for_book_ratings]
 
-    new_books = books[(count_ISBN >= 5)]
-    for index, value in new_books.iterrows():
-        value.bookTitle = stem(value.bookTitle)
+    new_books = books[(count_ISBN >= 10)]
 
-    new_users = users[(count_userId >= 10)]
-    # user's age goes from nan to 244. Need to fix it. But I have to change and the book ratings **
-    # new_users = new_users[(new_users.age >= 5) | (new_users.age <= 100)]
+    new_books['bookTitle'] = new_books['bookTitle'].apply(lambda cell: stem_and_token(cell))
+    print(new_books)
+    new_users = users[(count_userId >= 5)]
 
     return final_book_ratings, new_users, new_books
 
