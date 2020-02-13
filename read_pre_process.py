@@ -9,20 +9,16 @@ To run you have install needed modules
 import pandas as pd
 import numpy as np
 from nltk.stem import PorterStemmer
-import tokenizer
 import re
 import nltk
-from sklearn.feature_extraction.text import CountVectorizer
-from nltk.tokenize import RegexpTokenizer
 
 
 def read_data():
     """
-    Read the data from CSV file. The type of the data is Dataframe pandas. Set used columns.
+    Read the data from CSV file. The type of the data is Dataframe from pandas. Set used columns.
     :return: The data from the 3 CSV in 3 different Dataframe variables.
     """
     try:
-
         book_ratings = pd.read_csv('BX-CSV-Dump/BX-Book-Ratings.csv', delimiter=';', escapechar='\\', encoding='latin1')
         book_ratings.columns = ['userId', 'ISBN', 'bookRating']
 
@@ -41,13 +37,13 @@ def read_data():
         print("CSV files are not in proper format.")
 
 
-def stem_and_token(cell):
+def stem_and_token(list_of_words):
     """
-    :param cell:
-    :return:
+    :param list_of_words: a list of strings
+    :return: the list of string stemmed and tokenized
     """
     stemming = PorterStemmer()
-    cleanString = re.sub(r'[^A-Za-z]', ' ', cell)
+    cleanString = re.sub(r'[^A-Za-z]', ' ', list_of_words)
     tokenized_list_of_string = nltk.word_tokenize(cleanString)
     word_list = []
     for item in tokenized_list_of_string:
@@ -58,7 +54,7 @@ def stem_and_token(cell):
 
 def pre_processing(book_ratings, users, books):
     """
-    Delete books with less than 10 ratings and  users that have rate less than 5 books. Stem the the keywords
+    Delete books with less than 5 ratings and  users that have rate less than 10 books. Stem the the keywords
     :param book_ratings: dataframe (pd)
     :param users: dataframe (pd)
     :param books: dataframe (pd)
@@ -72,7 +68,7 @@ def pre_processing(book_ratings, users, books):
 
     new_books = books[(count_ISBN >= 10)]
 
-    new_books['bookTitle'] = new_books['bookTitle'].apply(lambda cell: stem_and_token(cell))
+    new_books['bookTitle'] = new_books['bookTitle'].apply(lambda title: stem_and_token(title))
     print(new_books)
     new_users = users[(count_userId >= 5)]
 
@@ -81,7 +77,7 @@ def pre_processing(book_ratings, users, books):
 
 def merge_tables(final_book_ratings, new_users, new_books):
     """
-    Using panda's merge to create one table.
+    Using panda's merge to create one table. And write to csv file in order to use it in the other .py file.
     :param final_book_ratings: dataFrame
     :param new_users: dataFrame
     :param new_books: dataFrame
@@ -94,6 +90,8 @@ def merge_tables(final_book_ratings, new_users, new_books):
 
 
 if __name__ == '__main__':
+    print('Pre-processing started!')
     book_ratings, users, books = read_data()
     final_book_ratings, new_users, new_books = pre_processing(book_ratings, users, books)
     merge_tables(final_book_ratings, new_users, new_books)
+    print('Pre-processing just completed, two new CSV files have been created.\n --Run recommend.py--')
