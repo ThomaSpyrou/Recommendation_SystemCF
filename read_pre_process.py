@@ -65,11 +65,8 @@ def pre_processing(book_ratings, users, books):
 
     mask_for_book_ratings = (count_userId >= 5) & (count_ISBN >= 10)
     final_book_ratings = book_ratings[mask_for_book_ratings]
-
     new_books = books[(count_ISBN >= 10)]
-
     new_books['bookTitle'] = new_books['bookTitle'].apply(lambda title: stem_and_token(title))
-    print(new_books)
     new_users = users[(count_userId >= 5)]
 
     return final_book_ratings, new_users, new_books

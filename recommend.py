@@ -26,7 +26,7 @@ def recommend(merged_data, books):
     :param books: dataframe all books to recommend, values in cells processed.
     :return: estimate the recommendations for both similarities for each user. list of list pattern [[userId , jaccard/dice, isbn]]
     """
-    random_indexes = random.sample(range(0, len(merged_data)), 5)
+    random_indexes = random.sample(range(0, len(merged_data) -1), 5)
     users_id = []
     for item in random_indexes:
         users_id.append(merged_data.iloc[item].userId)
@@ -142,7 +142,7 @@ def overlap_between_sims(jaccard, dice):
     :param dice: dataframe
     :return: print output
     """
-    jaccard_per_user = jaccard.groupby('userId').agg(lambda x : x.tolist()).reset_index()
+    jaccard_per_user = jaccard.groupby('userId').agg(lambda x: x.tolist()).reset_index()
 
     dice_per_user = dice.groupby('userId').agg(lambda x: x.tolist()).reset_index()
     dice_per_user.rename(columns={'ISBN': 'isbndice'}, inplace=True)
